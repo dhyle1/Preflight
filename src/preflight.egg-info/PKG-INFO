@@ -1,5 +1,0 @@
-Metadata-Version: 2.4
-Name: preflight
-Version: 0.1.0
-Summary: A lightweight CLI for running code quality checks before pushing code.
-Requires-Python: >=3.11
