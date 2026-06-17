@@ -1,2 +1,7 @@
+from preflight.checks.runner import run_checks
+
 def main() -> None:
-    print("Preflight is ready. ")
+    run_checks()
+
+if __name__ == "__main__":
+    main()
