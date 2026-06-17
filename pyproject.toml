@@ -1,0 +1,5 @@
+[project]
+name = "preflight"
+version = "0.1.0"
+description = "A lightweight CLI for running code quality checks before pushing code."
+requires-python = ">=3.11"
