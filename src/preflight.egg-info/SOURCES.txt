@@ -1,9 +1,0 @@
-README.md
-pyproject.toml
-src/preflight/__init__.py
-src/preflight/cli.py
-src/preflight.egg-info/PKG-INFO
-src/preflight.egg-info/SOURCES.txt
-src/preflight.egg-info/dependency_links.txt
-src/preflight.egg-info/entry_points.txt
-src/preflight.egg-info/top_level.txt
