@@ -1,35 +1,45 @@
 import subprocess
 
+from preflight.checks.models import CheckResult
 
-def run_ruff() -> int:
+
+def run_ruff() -> CheckResult:
     result = subprocess.run(["ruff", "check", "."])
-    return result.returncode
+
+    return CheckResult(
+        name="Ruff",
+        exit_code=result.returncode
+    )
 
 
-def run_pytest() -> int:
+def run_pytest() -> CheckResult:
     result = subprocess.run(["pytest"])
-    return result.returncode
+
+    return CheckResult(
+        name="Pytest",
+        exit_code=result.returncode
+    )
 
 
 def run_checks() -> None:
-    results = {
-        "Ruff": run_ruff(),
-        "Pytest": run_pytest()
-    }
+    results = [
+        run_ruff(),
+        run_pytest()
+    ]
 
     print_summary(results)
 
 
-def print_summary(check_results: dict[str, int]) -> None:
+def print_summary(check_results: list[CheckResult]) -> None:
     passed = 0
+    
+    for result in check_results:
+        status = "passed" if result.passed else "failed"
+        symbol = "✓" if result.passed else "x"
 
-    for name, code in check_results.items():
-        status = 'passed' if code == 0 else 'failed'
-        symbol = '✓' if code == 0 else 'x'
+        print(f"{symbol} {result.name} {status}")
 
-        print(f"{symbol} {name} {status}")
-
-        if code == 0:
+        if result.passed:
             passed += 1
 
     print("\nSummary")
