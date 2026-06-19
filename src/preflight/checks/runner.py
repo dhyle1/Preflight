@@ -3,20 +3,21 @@ import subprocess
 from preflight.checks.models import CheckResult
 
 
+def run_checks() -> None:
+    results = [
+        run_ruff(),
+        run_mypy(),
+        run_pytest()
+    ]
+
+    print_summary(results)
+
+
 def run_ruff() -> CheckResult:
     result = subprocess.run(["ruff", "check", "."])
 
     return CheckResult(
         name="Ruff",
-        exit_code=result.returncode
-    )
-
-
-def run_pytest() -> CheckResult:
-    result = subprocess.run(["pytest"])
-
-    return CheckResult(
-        name="Pytest",
         exit_code=result.returncode
     )
 
@@ -30,14 +31,13 @@ def run_mypy() -> CheckResult:
     )
 
 
-def run_checks() -> None:
-    results = [
-        run_ruff(),
-        run_pytest(),
-        run_mypy()
-    ]
+def run_pytest() -> CheckResult:
+    result = subprocess.run(["pytest"])
 
-    print_summary(results)
+    return CheckResult(
+        name="Pytest",
+        exit_code=result.returncode
+    )
 
 
 def print_summary(check_results: list[CheckResult]) -> None:
