@@ -4,7 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class CheckResult:
     name: str
-    exit_code: str
+    exit_code: int
 
     @property
     def passed(self) -> bool:

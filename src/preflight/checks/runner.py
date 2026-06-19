@@ -21,10 +21,20 @@ def run_pytest() -> CheckResult:
     )
 
 
+def run_mypy() -> CheckResult:
+    result = subprocess.run(["mypy", "src"])
+
+    return CheckResult(
+        name="MyPy",
+        exit_code=result.returncode
+    )
+
+
 def run_checks() -> None:
     results = [
         run_ruff(),
-        run_pytest()
+        run_pytest(),
+        run_mypy()
     ]
 
     print_summary(results)
