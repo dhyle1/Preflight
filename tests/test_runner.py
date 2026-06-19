@@ -17,13 +17,16 @@ def test_run_pytest_calls_pytest(mock_run):
     mock_run.assert_called_once_with(["pytest"])
 
 
+@patch("preflight.checks.runner.print_summary")
 @patch("preflight.checks.runner.run_pytest")
 @patch("preflight.checks.runner.run_ruff")
 def test_run_checks_runs_all_checks(
     mock_run_ruff,
-    mock_run_pytest
+    mock_run_pytest,
+    mock_print_summary
 ):
     run_checks()
 
     mock_run_ruff.assert_called_once_with()
     mock_run_pytest.assert_called_once_with()
+    mock_print_summary.assert_called_once()
