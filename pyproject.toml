@@ -4,5 +4,12 @@ version = "0.1.0"
 description = "A lightweight CLI for running code quality checks before pushing code."
 requires-python = ">=3.11"
 
+[project.optional.dependencies]
+dev = [
+    "pytest",
+    "ruff",
+    "mypy"
+]
+
 [project.scripts]
 preflight = "preflight.cli:main"
