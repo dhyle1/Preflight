@@ -3,7 +3,7 @@ import subprocess
 from preflight.checks.models import CheckResult
 
 
-def run_checks() -> None:
+def run_checks() -> int:
     results = [
         run_ruff(),
         run_mypy(),
@@ -11,6 +11,8 @@ def run_checks() -> None:
     ]
 
     print_summary(results)
+
+    return 0 if all_checks_passed(results) else 1
 
 
 def run_ruff() -> CheckResult:
@@ -38,6 +40,10 @@ def run_pytest() -> CheckResult:
         name="Pytest",
         exit_code=result.returncode
     )
+
+
+def all_checks_passed(check_results: list[CheckResult]) -> bool:
+    return all(result.passed for result in check_results)
 
 
 def print_summary(check_results: list[CheckResult]) -> None:
