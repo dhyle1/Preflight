@@ -2,11 +2,11 @@ from unittest.mock import patch
 
 from preflight.checks.models import CheckResult
 from preflight.checks.runner import (
-    run_ruff,
+    all_checks_passed,
+    run_checks,
     run_mypy,
     run_pytest,
-    run_checks,
-    all_checks_passed
+    run_ruff,
 )
 
 

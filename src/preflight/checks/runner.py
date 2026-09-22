@@ -16,7 +16,7 @@ def run_checks() -> int:
 
 
 def run_ruff() -> CheckResult:
-    result = subprocess.run(["ruff", "check", "."])
+    result = subprocess.run(["ruff", "check", "."], check=False)
 
     return CheckResult(
         name="Ruff",
@@ -25,7 +25,7 @@ def run_ruff() -> CheckResult:
 
 
 def run_mypy() -> CheckResult:
-    result = subprocess.run(["mypy", "src"])
+    result = subprocess.run(["mypy", "src"], check=False)
 
     return CheckResult(
         name="MyPy",
@@ -34,7 +34,7 @@ def run_mypy() -> CheckResult:
 
 
 def run_pytest() -> CheckResult:
-    result = subprocess.run(["pytest"])
+    result = subprocess.run(["pytest"], check=False)
 
     return CheckResult(
         name="Pytest",
