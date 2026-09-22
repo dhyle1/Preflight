@@ -14,21 +14,21 @@ from preflight.checks.runner import (
 def test_run_ruff_calls_ruff(mock_run):
     run_ruff()
 
-    mock_run.assert_called_once_with(["ruff", "check", "."])
+    mock_run.assert_called_once_with(["ruff", "check", "."], check=False)
 
 
 @patch("subprocess.run")
 def test_run_mypy_calls_mypy(mock_run):
     run_mypy()
 
-    mock_run.assert_called_once_with(["mypy", "src"])
+    mock_run.assert_called_once_with(["mypy", "src"], check=False)
 
 
 @patch("subprocess.run")
 def test_run_pytest_calls_pytest(mock_run):
     run_pytest()
 
-    mock_run.assert_called_once_with(["pytest"])
+    mock_run.assert_called_once_with(["pytest"], check=False)
 
 
 @patch("preflight.checks.runner.print_summary")
