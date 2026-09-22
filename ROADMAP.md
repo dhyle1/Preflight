@@ -1,46 +1,30 @@
 # Preflight Roadmap
 
-## Vision
+`Next` is realistic near-term work. `Later` is possible future work. Neither is a commitment.
 
-Preflight is a Python CLI for checking code quality and maintainability.
+## Where Preflight is today
 
-The goal is to go beyond running existing tools and start analyzing the codebase itself, showing where the biggest problems are and what should be fixed first.
+Preflight runs Ruff, MyPy and Pytest, prints a pass/fail summary, and exits non-zero if any of them fail. Each check only reports whether its tool passed. Preflight doesn't analyze the code itself yet.
 
-## Near-term goals
+## Direction
 
-### Codebase analysis
+The goal is for Preflight to analyze the codebase itself, not only run other tools: find maintainability problems such as oversized files and functions or overly complex code, and report them in a way that makes it clear what to fix first.
 
-Add checks for:
+Preflight will keep using Ruff, MyPy and Pytest for what they already do well rather than reimplementing them.
 
-- Large files and functions
-- High complexity
-- Dead code
-- Duplicate code
-- Weak typing
-- Test and coverage signals
+## Next
 
-### Reporting
+- **Structured findings**: let checks report individual findings (file, line, message) instead of only pass/fail. The other items build on this.
+- **First analysis checks**: oversized files and functions, and high complexity.
+- **Configurable target paths**: instead of the hardcoded `.` and `src`.
+- **Grouped reporting**: group findings by category and show the worst files first.
 
-Make the output easier to act on:
+## Later
 
-- Group findings by category
-- Highlight the worst files and functions
-- Rank issues by severity
-- Show the most important problems first
-
-### Health scoring
-
-Explore a simple maintainability score based on measurable signals.
-
-The score should be transparent and easy to understand.
-
-### Change-aware analysis
-
-Show whether a branch improves or worsens the codebase:
-
-- Compare against another branch
-- Show newly introduced issues
-- Track changes in maintainability metrics
+- **More analysis checks**: for example missing type annotations, dead code, duplicate code, and test/coverage signals.
+- **Severity levels and ranking**
+- **A simple maintainability score**: based on measurable signals, transparent and easy to understand.
+- **Branch comparison**: show newly introduced issues and how maintainability metrics change compared to a base branch.
 
 ## Out of scope for now
 

@@ -1,63 +1,79 @@
 # Preflight
 
-Preflight is a lightweight CLI tool for running project quality checks from a single command.
+Preflight is a small Python CLI that runs Ruff, MyPy and Pytest with one command and reports a combined pass/fail result.
 
-It currently runs:
+The plan is to grow it into a lightweight tool for analyzing code maintainability, but that analysis does not exist yet.
 
-* Ruff
-* MyPy
-* Pytest
+## What it does
 
-and provides a summary of the results and overall check status.
+Running `preflight` runs these commands, in order, in the current directory:
+
+1. `ruff check .`
+2. `mypy src`
+3. `pytest`
+
+All three always run, even if an earlier one fails. Their output is printed as-is, followed by a short summary of which checks passed. A check passes if its tool exits with code 0.
+
+## Requirements
+
+- Python 3.11+
+- Ruff, MyPy and Pytest installed in the same environment. Preflight calls them by name, so they need to be on your `PATH`.
+- Code in a `src/` directory, since MyPy is run on `src`.
+
+If one of the tools isn't installed, Preflight stops with an error instead of reporting a failed check.
 
 ## Installation
 
-Clone the repository and install it in editable mode:
+Clone the repository and install it in editable mode, together with Ruff, MyPy and Pytest:
 
 ```bash
-pip install -e .
+pip install -e ".[dev]"
 ```
 
 ## Usage
 
-Run Preflight from the root of your project:
+Run Preflight from the root of the project you want to check:
 
 ```bash
 preflight
 ```
 
-Example output:
+The output from each tool comes first, followed by Preflight's summary:
 
 ```text
+... output from ruff, mypy and pytest ...
 ✓ Ruff passed
-✓ MyPy passed
+x MyPy failed
 ✓ Pytest passed
 
 Summary
 -------
-3/3 checks passed
+2/3 checks passed
 ```
 
-## Exit Codes
+## Exit codes
 
-Preflight returns:
-
-| Exit Code | Description               |
+| Exit code | Description               |
 | --------- | ------------------------- |
 | 0         | All checks passed         |
 | 1         | One or more checks failed |
 
-## Running Tests
+A check counts as failed whenever its tool exits with a non-zero code.
+
+## Development
+
+Install with the dev dependencies (see [Installation](#installation)), then run the tests:
 
 ```bash
 pytest
 ```
 
+Preflight can also be run on itself:
+
+```bash
+preflight
+```
+
 ## Roadmap
 
-Planned improvements include:
-
-* Configuration support
-* Custom check selection
-* Additional quality checks
-* CI workflow integration
+See [ROADMAP.md](ROADMAP.md) for where Preflight is heading.
