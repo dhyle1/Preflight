@@ -4,7 +4,7 @@ from pathlib import Path
 from preflight.checks.models import Finding
 
 
-class ASTAnalyzer(ast.nodeVisitor):
+class ASTAnalyzer(ast.NodeVisitor):
     def __init__(self, path: Path):
         self.path = path
         self.findings: list[Finding] = []
