@@ -1,18 +1,23 @@
 import ast
 from pathlib import Path
 
-from preflight.checks.models import Finding
-
 
 class ASTAnalyzer(ast.NodeVisitor):
     def __init__(self, path: Path):
         self.path = path
-        self.findings: list[Finding] = []
+        self.tree: ast.Module | None = None
+        self.functions: list[ast.FunctionDef] = []
+        self.classes: list[ast.ClassDef] = []
 
-    def analyze(self) -> list[Finding]:
+    def analyze(self) -> None:
         source = self.path.read_text()
-        tree = ast.parse(source)
+        self.tree = ast.parse(source)
+        self.visit(self.tree)
 
-        self.visit(tree)
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        self.functions.append(node)
+        self.generic_visit(node)
 
-        return self.findings
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        self.classes.append(node)
+        self.generic_visit(node)
