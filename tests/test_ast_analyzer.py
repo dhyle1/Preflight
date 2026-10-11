@@ -34,3 +34,18 @@ def test_analyze_collects_functions_and_classes(tmp_path: Path):
 
     assert function_names == ["login", "main"]
     assert class_names == ["User"]
+
+
+def test_analyze_collects_async_functions(tmp_path: Path):
+    file = tmp_path / "example.py"
+    file.write_text(
+        "async def fetch_data():\n"
+        "    pass\n"
+    )
+
+    analyzer = ASTAnalyzer(file)
+    analyzer.analyze()
+
+    function_names = [function.name for function in analyzer.functions]
+
+    assert function_names == ["fetch_data"]
