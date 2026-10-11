@@ -8,11 +8,15 @@ class ASTAnalyzer(ast.NodeVisitor):
         self.tree: ast.Module | None = None
         self.functions: list[ast.FunctionDef | ast.AsyncFunctionDef] = []
         self.classes: list[ast.ClassDef] = []
+        self.error: Exception | None = None
 
     def analyze(self) -> None:
-        source = self.path.read_text()
-        self.tree = ast.parse(source)
-        self.visit(self.tree)
+        try:
+            source = self.path.read_text()
+            self.tree = ast.parse(source)
+            self.visit(self.tree)
+        except(SyntaxError, UnicodeDecodeError, OSError) as error:
+            self.error = error
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         self.functions.append(node)

@@ -49,3 +49,13 @@ def test_analyze_collects_async_functions(tmp_path: Path):
     function_names = [function.name for function in analyzer.functions]
 
     assert function_names == ["fetch_data"]
+
+
+def test_analyze_stores_syntax_error(tmp_path: Path):
+    file = tmp_path / "broken.py"
+    file.write_text("def broken(")
+
+    analyzer = ASTAnalyzer(file)
+    analyzer.analyze()
+
+    assert isinstance(analyzer.error, SyntaxError)
