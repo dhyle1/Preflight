@@ -7,6 +7,9 @@ name = "preflight"
 version = "0.1.0"
 description = "A small CLI that runs Ruff, MyPy and Pytest and reports a combined result."
 requires-python = ">=3.11"
+dependencies = [
+    "radon==6.0.1",
+]
 
 [project.optional-dependencies]
 dev = [
@@ -17,3 +20,7 @@ dev = [
 
 [project.scripts]
 preflight = "preflight.cli:main"
+
+[[tool.mypy.overrides]]
+module = ["radon", "radon.*"]
+ignore_missing_imports = true
