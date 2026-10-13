@@ -1,5 +1,7 @@
 import ast
+from pathlib import Path
 
+from preflight.analyzers.ast_analyzer import ASTAnalyzer
 from preflight.metrics.complexity import calculate_complexity
 
 
@@ -83,3 +85,25 @@ def test_calculate_complexity_no_functions():
     results = calculate_complexity(ast.parse("x = 10"))
 
     assert results == []
+
+
+def test_calculate_complexity_with_ast_analyzer(tmp_path: Path):
+    file = tmp_path / "example.py"
+    file.write_text(
+        "def check_user(user):\n"
+        "    if user.active:\n"
+        "        return True\n"
+        "    return False\n"
+    )
+
+    analyzer = ASTAnalyzer(file)
+    analyzer.analyze()
+
+    assert analyzer.error is None
+    assert analyzer.tree is not None
+
+    results = calculate_complexity(analyzer.tree)
+
+    assert len(results) == 1
+    assert results[0].name == "check_user"
+    assert results[0].complexity == 2
