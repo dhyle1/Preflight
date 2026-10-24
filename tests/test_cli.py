@@ -1,9 +1,11 @@
+import sys
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
 
 from preflight.analyzers.models import FileAnalysis
-from preflight.cli import build_parser, print_analysis
+from preflight.cli import build_parser, main, print_analysis
 from preflight.metrics.models import FunctionComplexity
 
 
@@ -134,3 +136,30 @@ def test_print_analysis_multiple_files(capsys):
         < captured.out.index("utils.py")
         < captured.out.index("format_output")
     )
+
+
+def test_main_no_command(monkeypatch):
+    mock_checks = Mock(return_value=0)
+
+    monkeypatch.setattr(sys, "argv", ["preflight"])
+    monkeypatch.setattr("preflight.cli.run_checks", mock_checks)
+
+    with pytest.raises(SystemExit) as exc_info:
+        main()
+
+    assert exc_info.value.code == 0
+    mock_checks.assert_called_once_with()
+
+
+def test_main_analyze_command(monkeypatch):
+    mock_analyze = Mock(return_value=[])
+    mock_print = Mock()
+
+    monkeypatch.setattr(sys, "argv", ["preflight", "analyze", "src/"])
+    monkeypatch.setattr("preflight.cli.analyze_directory", mock_analyze)
+    monkeypatch.setattr("preflight.cli.print_analysis", mock_print)
+
+    main()
+
+    mock_analyze.assert_called_once_with(Path("src/"))
+    mock_print.assert_called_once_with([])
