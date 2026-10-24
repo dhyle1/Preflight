@@ -163,3 +163,17 @@ def test_main_analyze_command(monkeypatch):
 
     mock_analyze.assert_called_once_with(Path("src/"))
     mock_print.assert_called_once_with([])
+
+
+def test_main_analyze_nonexistent_dir(monkeypatch):
+    mock_analyze = Mock(
+        side_effect=NotADirectoryError("Invalid directory: nonexistent")
+    )
+
+    monkeypatch.setattr(sys, "argv", ["preflight", "analyze", "nonexistent/"])
+    monkeypatch.setattr("preflight.cli.analyze_directory", mock_analyze)
+
+    with pytest.raises(SystemExit) as exc_info:
+        main()
+
+    assert exc_info.value.code == "Error: Invalid directory: nonexistent"

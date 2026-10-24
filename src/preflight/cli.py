@@ -76,8 +76,12 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.command == "analyze":
-        directory_analysis = analyze_directory(args.path)
-        print_analysis(directory_analysis)
+        try:
+            directory_analysis = analyze_directory(args.path)
+            print_analysis(directory_analysis)
+        except(NotADirectoryError) as exc:
+            raise SystemExit(f"Error: {exc}") from None
+        
     elif args.command is None:
         raise SystemExit(run_checks())
 
