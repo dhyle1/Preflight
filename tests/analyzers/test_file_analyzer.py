@@ -52,3 +52,15 @@ def test_analyze_file_nonexistent_file(tmp_path: Path):
     assert result.path == file
     assert isinstance(result.error, FileNotFoundError)
     assert result.complexity_metrics == []
+
+
+def test_analyze_latin_encoding(tmp_path: Path):
+    file = tmp_path / "example.py"
+    file.write_bytes(
+        '# coding: latin-1\nmessage = "café"\n'.encode("latin-1")
+    )
+
+    result = analyze_file(file)
+
+    assert result.error is None
+    assert result.complexity_metrics == []
