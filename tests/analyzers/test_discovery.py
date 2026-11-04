@@ -76,3 +76,15 @@ def test_discover_sorted_files(tmp_path: Path):
     result = discover_python_files(tmp_path)
 
     assert result == [a, m, z]
+
+
+def test_discover_files_in_nested_build_directory(tmp_path: Path):
+    directory = tmp_path / "src" / "build"
+    directory.mkdir(parents=True)
+
+    file = directory / "compiler.py"
+    file.write_text("x = 1")
+
+    result = discover_python_files(tmp_path)
+
+    assert result == [file]
