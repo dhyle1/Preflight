@@ -8,7 +8,6 @@ EXCLUDED_DIRS = {
     # Virtual environments
     ".venv",
     "venv",
-    "env",
     ".env",
 
     # Python caches
@@ -18,10 +17,6 @@ EXCLUDED_DIRS = {
     ".ruff_cache",
     ".tox",
     ".nox",
-
-    # Build artifacts
-    "build",
-    "dist",
 
     # Other tooling
     ".idea",
