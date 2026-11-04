@@ -1,10 +1,15 @@
 # Preflight
 
-Preflight is a small Python CLI that runs Ruff, MyPy and Pytest with one command and reports a combined pass/fail result.
+Preflight is a small Python CLI with two commands:
 
-The plan is to grow it into a lightweight tool for analyzing code maintainability, but that analysis does not exist yet.
+- `preflight` runs Ruff, MyPy and Pytest with one command and reports a combined pass/fail result.
+- `preflight analyze [DIR]` finds the Python files in a directory and reports the cyclomatic complexity of each function.
+
+The plan is to grow it into a lightweight tool for analyzing code maintainability. For now, `analyze` only reports complexity numbers: there are no thresholds, findings or pass/fail results for it yet.
 
 ## What it does
+
+### Running checks
 
 Running `preflight` runs these commands, in order, in the current directory:
 
@@ -14,11 +19,22 @@ Running `preflight` runs these commands, in order, in the current directory:
 
 All three always run, even if an earlier one fails. Their output is printed as-is, followed by a short summary of which checks passed. A check passes if its tool exits with code 0.
 
+### Analyzing complexity
+
+Running `preflight analyze [DIR]` walks `DIR` (the current directory by default), parses every `.py` file it finds, and prints the cyclomatic complexity of each function, computed with [Radon](https://radon.readthedocs.io/).
+
+- Regular, nested and async functions are included, as well as class methods. Methods are shown as `ClassName.method` and nested functions as `outer.inner`.
+- Files are read using their declared source encoding (for example `# -*- coding: latin-1 -*-`), defaulting to UTF-8.
+- Files that can't be read or parsed are listed with an error, and the rest are still analyzed.
+- Symlinked directories aren't followed, and these directories are skipped at any depth: `.git`, `.venv`, `venv`, `.env`, `__pycache__`, `.mypy_cache`, `.pytest_cache`, `.ruff_cache`, `.tox`, `.nox`, `.idea`, `.vscode` and `node_modules`.
+
 ## Requirements
 
 - Python 3.11+
-- Ruff, MyPy and Pytest installed in the same environment. Preflight calls them by name, so they need to be on your `PATH`.
-- Code in a `src/` directory, since MyPy is run on `src`.
+- Radon, which is installed automatically as a dependency.
+- For `preflight` only:
+  - Ruff, MyPy and Pytest installed in the same environment. Preflight calls them by name, so they need to be on your `PATH`.
+  - Code in a `src/` directory, since MyPy is run on `src`.
 
 If one of the tools isn't installed, Preflight stops with an error instead of reporting a failed check.
 
@@ -31,6 +47,8 @@ pip install -e ".[dev]"
 ```
 
 ## Usage
+
+### `preflight`
 
 Run Preflight from the root of the project you want to check:
 
@@ -51,7 +69,35 @@ Summary
 2/3 checks passed
 ```
 
+### `preflight analyze`
+
+```bash
+preflight analyze          # analyze the current directory
+preflight analyze src/     # analyze a specific directory
+```
+
+Files are listed in path order. Within each file, functions are sorted from most to least complex, with their starting line (`LINE`) and cyclomatic complexity (`CC`):
+
+```text
+Preflight Analysis
+-----------------------------------------------------------------
+
+pkg/__init__.py
+  No functions found.
+
+pkg/orders.py
+                  LINE    CC
+  Order.validate     2     4
+  load.parse        10     2
+  load               9     1
+
+pkg/utils.py
+  Error: invalid syntax (<unknown>, line 1)
+```
+
 ## Exit codes
+
+For `preflight`:
 
 | Exit code | Description               |
 | --------- | ------------------------- |
@@ -59,6 +105,21 @@ Summary
 | 1         | One or more checks failed |
 
 A check counts as failed whenever its tool exits with a non-zero code.
+
+For `preflight analyze`:
+
+| Exit code | Description                                       |
+| --------- | ------------------------------------------------- |
+| 0         | Analysis finished, whatever the complexity values |
+| 1         | The given path isn't a directory                  |
+
+## Limitations
+
+- `analyze` only reports numbers. It has no complexity thresholds, doesn't produce findings, and can't fail a build, so it isn't usable as a CI gate yet.
+- `analyze` only takes a directory, not a single file.
+- Complexity is the only metric so far. File and function size aren't measured yet.
+- The `preflight` checks always run on `.` and `src`. Their paths can't be configured.
+- There is no configuration file.
 
 ## Development
 
@@ -72,8 +133,9 @@ Preflight can also be run on itself:
 
 ```bash
 preflight
+preflight analyze src/
 ```
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for where Preflight is heading.
+See [ROADMAP.md](ROADMAP.md) for what's done and where Preflight is heading.
