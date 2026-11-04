@@ -1,4 +1,5 @@
 import ast
+import tokenize
 from pathlib import Path
 
 
@@ -12,9 +13,12 @@ class ASTAnalyzer(ast.NodeVisitor):
 
     def analyze(self) -> None:
         try:
-            source = self.path.read_text()
+            with tokenize.open(self.path) as file:
+                source = file.read()
+
             self.tree = ast.parse(source)
             self.visit(self.tree)
+            
         except(SyntaxError, UnicodeDecodeError, OSError) as error:
             self.error = error
 
@@ -29,4 +33,3 @@ class ASTAnalyzer(ast.NodeVisitor):
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         self.classes.append(node)
         self.generic_visit(node)
-
