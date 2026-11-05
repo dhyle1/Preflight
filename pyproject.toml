@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "preflight"
 version = "0.1.0"
-description = "A small CLI that runs Ruff, MyPy and Pytest and reports a combined result."
+description = "A small CLI that runs Ruff, MyPy and Pytest and performs static analysis of function complexity and length."
 requires-python = ">=3.11"
 dependencies = [
     "radon==6.0.1",

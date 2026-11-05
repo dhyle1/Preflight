@@ -17,7 +17,7 @@ def test_discover_files_in_root(tmp_path: Path):
     result = discover_python_files(tmp_path)
 
     assert result == [
-        tmp_path / "main.py", 
+        tmp_path / "main.py",
         tmp_path / "utils.py",
         ]
 

@@ -22,7 +22,7 @@ class ASTAnalyzer(ast.NodeVisitor):
             self.tree = ast.parse(source)
             self.visit(self.tree)
 
-        except(SyntaxError, UnicodeDecodeError, OSError) as error:
+        except (SyntaxError, UnicodeDecodeError, OSError) as error:
             self.error = error
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:

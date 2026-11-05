@@ -8,7 +8,11 @@ from preflight.checks.runner import run_checks
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Analyze Python projects with Preflight"
+        description=(
+            "Run development checks and static analysis on Python projects. "
+            "Run preflight without a subcommand to execute Ruff, MyPy and "
+            "Pytest."
+        )
     )
 
     subparsers = parser.add_subparsers(dest="command")
@@ -116,9 +120,9 @@ def main() -> None:
         try:
             directory_analysis = analyze_directory(args.path)
             print_analysis(directory_analysis)
-        except(NotADirectoryError) as exc:
+        except NotADirectoryError as exc:
             raise SystemExit(f"Error: {exc}") from None
-        
+
     elif args.command is None:
         raise SystemExit(run_checks())
 
