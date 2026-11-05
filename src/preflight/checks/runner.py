@@ -16,30 +16,24 @@ def run_checks() -> int:
 
 
 def run_ruff() -> CheckResult:
-    result = subprocess.run(["ruff", "check", "."], check=False)
-
-    return CheckResult(
-        name="Ruff",
-        exit_code=result.returncode
-    )
+    return run_tool("Ruff", ["ruff", "check", "."])
 
 
 def run_mypy() -> CheckResult:
-    result = subprocess.run(["mypy", "src"], check=False)
-
-    return CheckResult(
-        name="MyPy",
-        exit_code=result.returncode
-    )
+    return run_tool("MyPy", ["mypy", "src"])
 
 
 def run_pytest() -> CheckResult:
-    result = subprocess.run(["pytest"], check=False)
+    return run_tool("Pytest", ["pytest"])
 
-    return CheckResult(
-        name="Pytest",
-        exit_code=result.returncode
-    )
+
+def run_tool(name: str, command: list[str]) -> CheckResult:
+    try:
+        result = subprocess.run(command, check=False)
+    except FileNotFoundError:
+        return CheckResult(name=name, exit_code=127, tool_missing=True)
+
+    return CheckResult(name=name, exit_code=result.returncode)
 
 
 def all_checks_passed(check_results: list[CheckResult]) -> bool:
@@ -52,6 +46,9 @@ def print_summary(check_results: list[CheckResult]) -> None:
     for result in check_results:
         status = "passed" if result.passed else "failed"
         symbol = "✓" if result.passed else "x"
+
+        if result.tool_missing:
+            status = "not found (is it installed and on PATH?)"
 
         print(f"{symbol} {result.name} {status}")
 

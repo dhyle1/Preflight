@@ -36,7 +36,7 @@ Running `preflight analyze [DIR]` walks `DIR` (the current directory by default)
   - Ruff, MyPy and Pytest installed in the same environment. Preflight calls them by name, so they need to be on your `PATH`.
   - Code in a `src/` directory, since MyPy is run on `src`.
 
-If one of the tools isn't installed, Preflight stops with an error instead of reporting a failed check.
+If one of the tools isn't installed, Preflight reports that check as failed with a "not found" message and still runs the others.
 
 ## Installation
 
@@ -111,7 +111,7 @@ For `preflight`:
 | 0         | All checks passed         |
 | 1         | One or more checks failed |
 
-A check counts as failed whenever its tool exits with a non-zero code.
+A check counts as failed whenever its tool exits with a non-zero code or isn't installed.
 
 For `preflight analyze`:
 

@@ -14,6 +14,7 @@ class CheckResult:
     name: str
     exit_code: int
     findings: list[Finding] = field(default_factory=list)
+    tool_missing: bool = False
 
     @property
     def passed(self) -> bool:
