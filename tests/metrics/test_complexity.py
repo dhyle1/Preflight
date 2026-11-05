@@ -8,14 +8,7 @@ from preflight.metrics.complexity import calculate_complexity
 def test_calculate_complexity_simple_function():
     source = "def greet():\n    return 'Hello'"
 
-    tree = ast.parse(source)
-    results = calculate_complexity(tree)
-
-    assert len(results) == 1
-    assert results[0].name == "greet"
-    assert results[0].start_line == 1
-    assert results[0].end_line == 2
-    assert results[0].complexity == 1
+    assert calculate_complexity(ast.parse(source)) == {1: 1}
 
 
 def test_calculate_complexity_nested_function():
@@ -28,20 +21,7 @@ def test_calculate_complexity_nested_function():
         "    return inner(20)\n"
     )
 
-    tree = ast.parse(source)
-    results = calculate_complexity(tree)
-
-    assert len(results) == 2
-
-    assert results[0].name == "outer"
-    assert results[0].start_line == 1
-    assert results[0].end_line == 6
-    assert results[0].complexity == 1
-
-    assert results[1].name == "outer.inner"
-    assert results[1].start_line == 2
-    assert results[1].end_line == 5
-    assert results[1].complexity == 2
+    assert calculate_complexity(ast.parse(source)) == {1: 1, 2: 2}
 
 
 def test_calculate_complexity_class_method():
@@ -53,14 +33,7 @@ def test_calculate_complexity_class_method():
         "        return False\n"
     )
 
-    tree = ast.parse(source)
-    results = calculate_complexity(tree)
-
-    assert len(results) == 1
-    assert results[0].name == "UserService.validate"
-    assert results[0].start_line == 2
-    assert results[0].end_line == 5
-    assert results[0].complexity == 2
+    assert calculate_complexity(ast.parse(source)) == {2: 2}
 
 
 def test_calculate_complexity_async_function():
@@ -71,20 +44,32 @@ def test_calculate_complexity_async_function():
         "    return {'id': user_id}\n"
     )
 
-    tree = ast.parse(source)
-    results = calculate_complexity(tree)
+    assert calculate_complexity(ast.parse(source)) == {1: 2}
 
-    assert len(results) == 1
-    assert results[0].name == "fetch_user"
-    assert results[0].start_line == 1
-    assert results[0].end_line == 4
-    assert results[0].complexity == 2
+
+def test_calculate_complexity_decorated_function_uses_def_line():
+    source = (
+        "@decorator\n"
+        "def greet():\n"
+        "    return 'Hello'\n"
+    )
+
+    assert calculate_complexity(ast.parse(source)) == {2: 1}
+
+
+def test_calculate_complexity_does_not_score_local_class_methods():
+    source = (
+        "def outer():\n"
+        "    class Local:\n"
+        "        def method(self):\n"
+        "            pass\n"
+    )
+
+    assert calculate_complexity(ast.parse(source)) == {1: 1}
 
 
 def test_calculate_complexity_no_functions():
-    results = calculate_complexity(ast.parse("x = 10"))
-
-    assert results == []
+    assert calculate_complexity(ast.parse("x = 10")) == {}
 
 
 def test_calculate_complexity_with_ast_analyzer(tmp_path: Path):
@@ -101,9 +86,4 @@ def test_calculate_complexity_with_ast_analyzer(tmp_path: Path):
 
     assert analyzer.error is None
     assert analyzer.tree is not None
-
-    results = calculate_complexity(analyzer.tree)
-
-    assert len(results) == 1
-    assert results[0].name == "check_user"
-    assert results[0].complexity == 2
+    assert calculate_complexity(analyzer.tree) == {1: 2}

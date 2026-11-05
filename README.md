@@ -3,9 +3,9 @@
 Preflight is a small Python CLI with two commands:
 
 - `preflight` runs Ruff, MyPy and Pytest with one command and reports a combined pass/fail result.
-- `preflight analyze [DIR]` finds the Python files in a directory and reports the cyclomatic complexity of each function.
+- `preflight analyze [DIR]` finds the Python files in a directory and reports the cyclomatic complexity and length of each function.
 
-The plan is to grow it into a lightweight tool for analyzing code maintainability. For now, `analyze` only reports complexity numbers: there are no thresholds, findings or pass/fail results for it yet.
+The plan is to grow it into a lightweight tool for analyzing code maintainability. For now, `analyze` only reports numbers: there are no thresholds, findings or pass/fail results for it yet.
 
 ## What it does
 
@@ -19,11 +19,13 @@ Running `preflight` runs these commands, in order, in the current directory:
 
 All three always run, even if an earlier one fails. Their output is printed as-is, followed by a short summary of which checks passed. A check passes if its tool exits with code 0.
 
-### Analyzing complexity
+### Analyzing functions
 
-Running `preflight analyze [DIR]` walks `DIR` (the current directory by default), parses every `.py` file it finds, and prints the cyclomatic complexity of each function, computed with [Radon](https://radon.readthedocs.io/).
+Running `preflight analyze [DIR]` walks `DIR` (the current directory by default), parses every `.py` file it finds, and prints two metrics for each function: its cyclomatic complexity, computed with [Radon](https://radon.readthedocs.io/), and its length.
 
 - Regular, nested and async functions are included, as well as class methods. Methods are shown as `ClassName.method` and nested functions as `outer.inner`.
+- Length is the physical line span from the `def` line to the function's last statement. It includes blank lines and docstrings, and excludes decorators and comments after the last statement. A nested function counts toward both itself and its parent.
+- Radon doesn't score methods of classes defined inside a function, and doesn't add them to the parent's complexity. They are listed with their length and `-` for complexity.
 - Files are read using their declared source encoding (for example `# -*- coding: latin-1 -*-`), defaulting to UTF-8.
 - Files that can't be read or parsed are listed with an error, and the rest are still analyzed.
 - Symlinked directories aren't followed, and these directories are skipped at any depth: `.git`, `.venv`, `venv`, `.env`, `__pycache__`, `.mypy_cache`, `.pytest_cache`, `.ruff_cache`, `.tox`, `.nox`, `.idea`, `.vscode` and `node_modules`.
@@ -76,7 +78,7 @@ preflight analyze          # analyze the current directory
 preflight analyze src/     # analyze a specific directory
 ```
 
-Files are listed in path order. Within each file, functions are sorted from most to least complex, with their starting line (`LINE`) and cyclomatic complexity (`CC`). A summary at the end gives the totals and the most complex function, if any were found:
+Files are listed in path order. Within each file, functions are sorted from most to least complex, with their starting line (`LINE`), cyclomatic complexity (`CC`) and length in lines (`LEN`). Functions without a complexity score come last. A summary at the end gives the totals and the most complex function, if any were scored:
 
 ```text
 Preflight Analysis
@@ -86,10 +88,10 @@ pkg/__init__.py
   No functions found.
 
 pkg/orders.py
-                  LINE    CC
-  Order.validate     2     4
-  load.parse        10     2
-  load               9     1
+                  LINE    CC   LEN
+  Order.validate     2     4     6
+  load.parse        10     2     3
+  load               9     1     5
 
 pkg/utils.py
   Error: invalid syntax (<unknown>, line 1)
@@ -124,7 +126,7 @@ For `preflight analyze`:
 
 - `analyze` only reports numbers. It has no complexity thresholds, doesn't produce findings, and can't fail a build, so it isn't usable as a CI gate yet.
 - `analyze` only takes a directory, not a single file.
-- Complexity is the only metric so far. File and function size aren't measured yet.
+- Complexity and function length are the only metrics so far. File size isn't measured yet.
 - The `preflight` checks always run on `.` and `src`. Their paths can't be configured.
 - There is no configuration file.
 

@@ -15,8 +15,8 @@ All code lives in `src/preflight/`. Tests in `tests/` mirror that layout, one te
 
 - `cli.py`: argparse setup, output formatting, exit handling. Bare `preflight` runs the checks; `preflight analyze [DIR]` runs the analysis.
 - `checks/`: `runner.py` runs Ruff, MyPy and Pytest as subprocesses and prints the summary. `models.py` holds `CheckResult`.
-- `analyzers/`: the `analyze` pipeline. `discovery.py` finds `.py` files and skips excluded directories, `ast_analyzer.py` reads and parses one file, `file_analyzer.py` turns that into a `FileAnalysis`, and `directory_analyzer.py` runs it over every discovered file.
-- `metrics/`: `complexity.py` computes cyclomatic complexity with Radon. `models.py` holds `FunctionComplexity`.
+- `analyzers/`: the `analyze` pipeline. `discovery.py` finds `.py` files and skips excluded directories, `ast_analyzer.py` reads and parses one file and records each function's identity and location, `file_analyzer.py` joins the metrics into a `FileAnalysis`, and `directory_analyzer.py` runs it over every discovered file.
+- `metrics/`: `complexity.py` computes cyclomatic complexity with Radon, and `length.py` computes function length. `models.py` holds `FunctionInfo` and `FunctionMetrics`.
 
 Conventions visible in the code: results are plain dataclasses (frozen where they are values), per-file read and parse errors are recorded on the result instead of stopping the run, and printing stays in `cli.py` and `checks/runner.py`. Follow these unless there is a reason not to, and say what the reason is.
 

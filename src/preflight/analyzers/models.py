@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from preflight.metrics.models import FunctionComplexity
+from preflight.metrics.models import FunctionMetrics
 
 
 @dataclass(frozen=True)
 class FileAnalysis:
     path: Path
-    complexity_metrics: list[FunctionComplexity]
+    function_metrics: list[FunctionMetrics]
     error: Exception | None
