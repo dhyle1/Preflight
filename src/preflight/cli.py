@@ -68,7 +68,37 @@ def print_analysis(results: list[FileAnalysis]) -> None:
                 f"{metric.complexity:>4}"
             )
 
+    print_analysis_summary(results)
     print()
+
+
+def print_analysis_summary(results: list[FileAnalysis]) -> None:
+    functions = [
+        (file_analysis.path, metric)
+        for file_analysis in results
+        for metric in file_analysis.complexity_metrics
+    ]
+    errors = sum(file_analysis.error is not None for file_analysis in results)
+
+    print("\nSummary")
+    print("-------")
+    print(f"Files:        {len(results)}")
+    print(f"Functions:    {len(functions)}")
+    print(f"Errors:       {errors}")
+
+    if functions:
+        path, metric = min(
+            functions,
+            key=lambda function: (
+                -function[1].complexity,
+                function[0],
+                function[1].start_line,
+            ),
+        )
+        print(
+            f"Most complex: {metric.name} (CC {metric.complexity}) "
+            f"at {path}:{metric.start_line}"
+        )
 
 
 def main() -> None:

@@ -76,7 +76,7 @@ preflight analyze          # analyze the current directory
 preflight analyze src/     # analyze a specific directory
 ```
 
-Files are listed in path order. Within each file, functions are sorted from most to least complex, with their starting line (`LINE`) and cyclomatic complexity (`CC`):
+Files are listed in path order. Within each file, functions are sorted from most to least complex, with their starting line (`LINE`) and cyclomatic complexity (`CC`). A summary at the end gives the totals and the most complex function, if any were found:
 
 ```text
 Preflight Analysis
@@ -93,6 +93,13 @@ pkg/orders.py
 
 pkg/utils.py
   Error: invalid syntax (<unknown>, line 1)
+
+Summary
+-------
+Files:        3
+Functions:    3
+Errors:       1
+Most complex: Order.validate (CC 4) at pkg/orders.py:2
 ```
 
 ## Exit codes

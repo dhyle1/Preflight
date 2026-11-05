@@ -138,6 +138,98 @@ def test_print_analysis_multiple_files(capsys):
     )
 
 
+def _function(name, start_line, complexity) -> FunctionComplexity:
+    return FunctionComplexity(
+        name=name,
+        start_line=start_line,
+        end_line=start_line + 1,
+        complexity=complexity,
+    )
+
+
+def test_print_analysis_summary_totals_and_most_complex(capsys):
+    results = [
+        FileAnalysis(
+            path=Path("a.py"),
+            complexity_metrics=[_function("simple", 1, 2)],
+            error=None,
+        ),
+        FileAnalysis(
+            path=Path("b.py"),
+            complexity_metrics=[
+                _function("low", 1, 1),
+                _function("high", 10, 9),
+            ],
+            error=None,
+        ),
+    ]
+
+    print_analysis(results)
+    output_lines = capsys.readouterr().out.splitlines()
+
+    assert "Files:        2" in output_lines
+    assert "Functions:    3" in output_lines
+    assert "Errors:       0" in output_lines
+    assert "Most complex: high (CC 9) at b.py:10" in output_lines
+
+
+def test_print_analysis_summary_tie_uses_first_path_and_line(capsys):
+    results = [
+        FileAnalysis(
+            path=Path("b.py"),
+            complexity_metrics=[_function("in_b", 1, 5)],
+            error=None,
+        ),
+        FileAnalysis(
+            path=Path("a.py"),
+            complexity_metrics=[
+                _function("later", 20, 5),
+                _function("earlier", 10, 5),
+            ],
+            error=None,
+        ),
+    ]
+
+    print_analysis(results)
+    output_lines = capsys.readouterr().out.splitlines()
+
+    assert "Most complex: earlier (CC 5) at a.py:10" in output_lines
+
+
+def test_print_analysis_summary_counts_errors(capsys):
+    results = [
+        FileAnalysis(
+            path=Path("broken.py"),
+            complexity_metrics=[],
+            error=SyntaxError("invalid syntax"),
+        ),
+        FileAnalysis(
+            path=Path("ok.py"),
+            complexity_metrics=[_function("works", 1, 1)],
+            error=None,
+        ),
+    ]
+
+    print_analysis(results)
+    output_lines = capsys.readouterr().out.splitlines()
+
+    assert "Files:        2" in output_lines
+    assert "Functions:    1" in output_lines
+    assert "Errors:       1" in output_lines
+    assert "Most complex: works (CC 1) at ok.py:1" in output_lines
+
+
+def test_print_analysis_summary_no_results(capsys):
+    print_analysis([])
+    captured = capsys.readouterr()
+    output_lines = captured.out.splitlines()
+
+    assert "Files:        0" in output_lines
+    assert "Functions:    0" in output_lines
+    assert "Errors:       0" in output_lines
+    assert "Most complex" not in captured.out
+
+
 def test_main_no_command(monkeypatch):
     mock_checks = Mock(return_value=0)
 
