@@ -12,7 +12,7 @@ def test_analyze_directory_multiple_valid_files(tmp_path: Path):
     assert len(results) == 2
     assert [result.path.name for result in results] == ["first.py", "second.py"]
     assert all(result.error is None for result in results)
-    assert all(len(result.complexity_metrics) == 1 for result in results)
+    assert all(len(result.function_metrics) == 1 for result in results)
 
 
 def test_analyze_directory_valid_and_invalid_files(tmp_path: Path):
@@ -26,10 +26,10 @@ def test_analyze_directory_valid_and_invalid_files(tmp_path: Path):
     results_by_name = {result.path.name: result for result in results}
 
     assert isinstance(results_by_name["invalid.py"].error, SyntaxError)
-    assert results_by_name["invalid.py"].complexity_metrics == []
+    assert results_by_name["invalid.py"].function_metrics == []
 
     assert results_by_name["valid.py"].error is None
-    assert len(results_by_name["valid.py"].complexity_metrics) == 1
+    assert len(results_by_name["valid.py"].function_metrics) == 1
 
 
 def test_analyze_directory_empty_directory(tmp_path: Path):

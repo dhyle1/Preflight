@@ -6,7 +6,15 @@ import pytest
 
 from preflight.analyzers.models import FileAnalysis
 from preflight.cli import build_parser, main, print_analysis
-from preflight.metrics.models import FunctionComplexity
+from preflight.metrics.models import FunctionInfo, FunctionMetrics
+
+
+def _function(name, start_line, complexity, length=2) -> FunctionMetrics:
+    return FunctionMetrics(
+        function=FunctionInfo(name, start_line, start_line + length - 1),
+        complexity=complexity,
+        length=length,
+    )
 
 
 def test_parser_no_command():
@@ -43,19 +51,9 @@ def test_parser_invalid_command():
 def test_print_analysis_valid_file(capsys):
     file_analysis = FileAnalysis(
         path=Path("example.py"),
-        complexity_metrics=[
-            FunctionComplexity(
-                name="process_data",
-                start_line=10,
-                end_line=20,
-                complexity=5,
-            ),
-            FunctionComplexity(
-                name="validate_input",
-                start_line=25,
-                end_line=30,
-                complexity=2,
-            ),
+        function_metrics=[
+            _function("process_data", 10, 5, length=11),
+            _function("validate_input", 25, 2, length=6),
         ],
         error=None,
     )
@@ -67,16 +65,75 @@ def test_print_analysis_valid_file(capsys):
     process_line = next(line for line in captured_lines if "process_data" in line)
     validate_line = next(line for line in captured_lines if "validate_input" in line)
 
+    header_line = next(line for line in captured_lines if "LINE" in line)
+
     assert "example.py" in captured.out
-    assert process_line.split()[-2:] == ["10", "5"]
-    assert validate_line.split()[-2:] == ["25", "2"]
+    assert header_line.split() == ["LINE", "CC", "LEN"]
+    assert process_line.split()[-3:] == ["10", "5", "11"]
+    assert validate_line.split()[-3:] == ["25", "2", "6"]
     assert captured.out.index("process_data") < captured.out.index("validate_input")
+
+
+def test_print_analysis_unscored_function_shows_dash_and_sorts_last(capsys):
+    file_analysis = FileAnalysis(
+        path=Path("example.py"),
+        function_metrics=[
+            _function("unscored_first", 1, None, length=3),
+            _function("scored_low", 5, 1),
+            _function("scored_high", 10, 4),
+        ],
+        error=None,
+    )
+
+    print_analysis([file_analysis])
+    captured_lines = capsys.readouterr().out.splitlines()
+
+    unscored_line = next(line for line in captured_lines if "unscored_first" in line)
+    function_names = [
+        line.split()[0]
+        for line in captured_lines
+        if line.split()[:1] in (["unscored_first"], ["scored_low"], ["scored_high"])
+    ]
+
+    assert unscored_line.split()[-3:] == ["1", "-", "3"]
+    assert function_names == ["scored_high", "scored_low", "unscored_first"]
+
+
+def test_print_analysis_summary_skips_unscored_functions(capsys):
+    file_analysis = FileAnalysis(
+        path=Path("example.py"),
+        function_metrics=[
+            _function("unscored", 1, None),
+            _function("scored", 5, 1),
+        ],
+        error=None,
+    )
+
+    print_analysis([file_analysis])
+    output_lines = capsys.readouterr().out.splitlines()
+
+    assert "Functions:    2" in output_lines
+    assert "Most complex: scored (CC 1) at example.py:5" in output_lines
+
+
+def test_print_analysis_only_unscored_functions(capsys):
+    file_analysis = FileAnalysis(
+        path=Path("example.py"),
+        function_metrics=[_function("unscored", 1, None)],
+        error=None,
+    )
+
+    print_analysis([file_analysis])
+    captured = capsys.readouterr()
+
+    assert "Functions:    1" in captured.out.splitlines()
+    assert "Most complex" not in captured.out
 
 
 def test_print_analysis_file_error(capsys):
     file_analysis = FileAnalysis(
         path=Path("broken.py"),
-        complexity_metrics=[],
+        function_metrics=[],
         error=SyntaxError("invalid syntax"),
     )
 
@@ -90,7 +147,7 @@ def test_print_analysis_file_error(capsys):
 def test_print_analysis_no_functions(capsys):
     file_analysis = FileAnalysis(
         path=Path("example.py"),
-        complexity_metrics=[],
+        function_metrics=[],
         error=None,
     )
 
@@ -104,26 +161,12 @@ def test_print_analysis_no_functions(capsys):
 def test_print_analysis_multiple_files(capsys):
     first_analysis = FileAnalysis(
         path=Path("main.py"),
-        complexity_metrics=[
-            FunctionComplexity(
-                name="process_data",
-                start_line=10,
-                end_line=20,
-                complexity=2,
-            ),
-        ],
+        function_metrics=[_function("process_data", 10, 2)],
         error=None,
     )
     second_analysis = FileAnalysis(
         path=Path("utils.py"),
-        complexity_metrics=[
-            FunctionComplexity(
-                name="format_output",
-                start_line=26,
-                end_line=35,
-                complexity=1,
-            ),
-        ],
+        function_metrics=[_function("format_output", 26, 1)],
         error=None,
     )
 
@@ -138,25 +181,16 @@ def test_print_analysis_multiple_files(capsys):
     )
 
 
-def _function(name, start_line, complexity) -> FunctionComplexity:
-    return FunctionComplexity(
-        name=name,
-        start_line=start_line,
-        end_line=start_line + 1,
-        complexity=complexity,
-    )
-
-
 def test_print_analysis_summary_totals_and_most_complex(capsys):
     results = [
         FileAnalysis(
             path=Path("a.py"),
-            complexity_metrics=[_function("simple", 1, 2)],
+            function_metrics=[_function("simple", 1, 2)],
             error=None,
         ),
         FileAnalysis(
             path=Path("b.py"),
-            complexity_metrics=[
+            function_metrics=[
                 _function("low", 1, 1),
                 _function("high", 10, 9),
             ],
@@ -177,12 +211,12 @@ def test_print_analysis_summary_tie_uses_first_path_and_line(capsys):
     results = [
         FileAnalysis(
             path=Path("b.py"),
-            complexity_metrics=[_function("in_b", 1, 5)],
+            function_metrics=[_function("in_b", 1, 5)],
             error=None,
         ),
         FileAnalysis(
             path=Path("a.py"),
-            complexity_metrics=[
+            function_metrics=[
                 _function("later", 20, 5),
                 _function("earlier", 10, 5),
             ],
@@ -200,12 +234,12 @@ def test_print_analysis_summary_counts_errors(capsys):
     results = [
         FileAnalysis(
             path=Path("broken.py"),
-            complexity_metrics=[],
+            function_metrics=[],
             error=SyntaxError("invalid syntax"),
         ),
         FileAnalysis(
             path=Path("ok.py"),
-            complexity_metrics=[_function("works", 1, 1)],
+            function_metrics=[_function("works", 1, 1)],
             error=None,
         ),
     ]

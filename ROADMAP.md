@@ -6,7 +6,7 @@
 
 Preflight runs Ruff, MyPy and Pytest, prints a pass/fail summary, and exits non-zero if any of them fail. Each check only reports whether its tool passed.
 
-It has also started analyzing the code itself: `preflight analyze [DIR]` reports the cyclomatic complexity of every function in a directory. It only reports the numbers. There are no thresholds, findings or exit codes based on them yet.
+It has also started analyzing the code itself: `preflight analyze [DIR]` reports the cyclomatic complexity and length of every function in a directory. It only reports the numbers. There are no thresholds, findings or exit codes based on them yet.
 
 ## Direction
 
@@ -20,13 +20,14 @@ Preflight will keep using Ruff, MyPy and Pytest for what they already do well ra
 - **File discovery**: `preflight analyze [DIR]` finds `.py` files recursively, skips known tooling directories (`.git`, virtual environments, caches, editor folders, `node_modules`) and doesn't follow symlinked directories.
 - **AST parsing**: files are parsed with Python's `ast` module, respecting declared source encodings. Files that can't be read or parsed are reported with an error without stopping the run.
 - **Cyclomatic complexity**: computed with Radon for regular, nested and async functions and class methods, and printed per file from most to least complex.
+- **Function length**: the physical line span of each function, computed from the AST and printed alongside complexity.
 
 ## Next
 
 - **Complexity thresholds**: flag functions above a configurable complexity limit.
 - **Structured findings**: let checks and analysis report individual findings (file, line, message) instead of only pass/fail or raw numbers. The other items build on this.
 - **CI gating**: make `preflight analyze` exit non-zero when findings exceed the thresholds, so it can fail a build.
-- **Size checks**: oversized files and functions.
+- **Size checks**: oversized files and functions. Function length is reported, but nothing flags it yet, and file size isn't measured.
 - **Configurable target paths**: instead of the hardcoded `.` and `src` for the checks.
 - **Grouped reporting**: group findings by category and show the worst files first.
 
