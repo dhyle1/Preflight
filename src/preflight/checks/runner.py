@@ -42,7 +42,7 @@ def all_checks_passed(check_results: list[CheckResult]) -> bool:
 
 def print_summary(check_results: list[CheckResult]) -> None:
     passed = 0
-    
+
     for result in check_results:
         status = "passed" if result.passed else "failed"
         symbol = "✓" if result.passed else "x"
@@ -58,4 +58,3 @@ def print_summary(check_results: list[CheckResult]) -> None:
     print("\nSummary")
     print("-------")
     print(f"{passed}/{len(check_results)} checks passed")
-

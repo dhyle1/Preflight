@@ -40,6 +40,12 @@ def test_parser_analyze_custom_path():
     assert args.path == Path("src")
 
 
+def test_help_explains_running_without_subcommand():
+    help_text = " ".join(build_parser().format_help().split())
+
+    assert "without a subcommand to execute Ruff, MyPy and Pytest" in help_text
+
+
 def test_parser_invalid_command():
     parser = build_parser()
     with pytest.raises(SystemExit) as exc_info:

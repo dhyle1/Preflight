@@ -155,4 +155,3 @@ def test_all_checks_passed_returns_false_when_any_fails():
     ]
 
     assert all_checks_passed(results) is False
-

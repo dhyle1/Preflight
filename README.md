@@ -42,11 +42,17 @@ If one of the tools isn't installed, Preflight reports that check as failed with
 
 ## Installation
 
-Clone the repository and install it in editable mode, together with Ruff, MyPy and Pytest:
+Clone the repository, create a virtual environment, and install Preflight in editable mode together with Ruff, MyPy and Pytest:
 
 ```bash
+git clone https://github.com/dhyle1/Preflight.git
+cd Preflight
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -e ".[dev]"
 ```
+
+On Windows, activate the environment with `.venv\Scripts\activate` instead.
 
 ## Usage
 
